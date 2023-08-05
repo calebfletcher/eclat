@@ -1,7 +1,7 @@
 use eclat::colour::Colour;
-use eclat::triangle::Triangle;
+use eclat::mesh::Mesh;
 use eclat::PixelBuffer;
-use glam::vec2;
+use glam::vec3;
 use std::num::NonZeroU32;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -38,16 +38,23 @@ fn main() {
                     PixelBuffer::new(&mut buffer, width as usize, height as usize);
                 pixel_buffer.clear(Colour::BLACK);
 
-                pixel_buffer.triangle(Triangle::new(
-                    vec2(50., 50.),
-                    vec2(140., 60.),
-                    vec2(70., 130.),
-                ));
-                pixel_buffer.triangle(Triangle::new(
-                    vec2(140., 60.),
-                    vec2(70., 130.),
-                    vec2(140., 140.),
-                ));
+                let vertices = vec![
+                    vec3(-0.9, -0.9, 0.),
+                    vec3(0.9, -0.9, 0.),
+                    vec3(0.9, 0.9, 0.),
+                    vec3(0.9, 0.9, 0.),
+                    vec3(-0.9, 0.9, 0.),
+                    vec3(-0.9, -0.9, 0.),
+                ];
+                let indices = vec![0, 1, 2, 3, 4, 5];
+                let colours = [Colour::RED, Colour::GREEN, Colour::BLUE]
+                    .into_iter()
+                    .cycle()
+                    .take(vertices.len())
+                    .collect();
+
+                let mesh = Mesh::new(vertices, indices, colours);
+                pixel_buffer.mesh(mesh);
 
                 pixel_buffer.save_buffer("out.png");
 

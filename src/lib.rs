@@ -1,13 +1,15 @@
 pub mod colour;
 pub mod line;
+pub mod mesh;
 pub mod pipeline;
 pub mod triangle;
 
 use std::path::Path;
 
 use colour::*;
-use glam::Vec3;
+use glam::{Mat4, Vec3, Vec4Swizzles};
 use image::Rgb;
+use mesh::Mesh;
 use triangle::Triangle;
 
 pub struct PixelBuffer<'a> {
@@ -108,5 +110,38 @@ impl<'a> PixelBuffer<'a> {
                 }
             }
         }
+    }
+
+    pub fn mesh(&mut self, mesh: Mesh) {
+        let ndc_to_ss = self.ndc_to_ss();
+
+        for indices in mesh.indices.chunks_exact(3) {
+            let p1 = mesh.vertices[indices[0]];
+            let p2 = mesh.vertices[indices[1]];
+            let p3 = mesh.vertices[indices[2]];
+
+            let p1_ndc = p1;
+            let p2_ndc = p2;
+            let p3_ndc = p3;
+
+            // Convert NDC to screen-space coordinates
+            let p1_ss = (ndc_to_ss * p1_ndc.extend(1.)).xy();
+            let p2_ss = (ndc_to_ss * p2_ndc.extend(1.)).xy();
+            let p3_ss = (ndc_to_ss * p3_ndc.extend(1.)).xy();
+
+            self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss));
+        }
+    }
+
+    fn ndc_to_ss(&self) -> Mat4 {
+        let halfwidth = self.width as f32 / 2.;
+        let halfheight = self.height as f32 / 2.;
+        Mat4::from_cols_array_2d(&[
+            [halfwidth, 0., 0., halfwidth],
+            [0., halfheight, 0., halfheight],
+            [0., 0., 1., 0.], // 1 is to preserve depth
+            [0., 0., 0., 0.],
+        ])
+        .transpose()
     }
 }
