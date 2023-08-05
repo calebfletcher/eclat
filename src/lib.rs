@@ -1,3 +1,4 @@
+pub mod camera;
 pub mod colour;
 pub mod line;
 pub mod mesh;
@@ -6,6 +7,7 @@ pub mod triangle;
 
 use std::path::Path;
 
+use camera::Camera;
 use colour::*;
 use glam::{Mat4, Vec3, Vec4Swizzles};
 use image::Rgb;
@@ -112,22 +114,25 @@ impl<'a> PixelBuffer<'a> {
         }
     }
 
-    pub fn mesh(&mut self, mesh: Mesh) {
+    pub fn mesh(&mut self, mesh: Mesh, camera: Camera) {
         let ndc_to_ss = self.ndc_to_ss();
+        let view_matrix = camera.as_matrix();
+        let proj_matrix = Mat4::IDENTITY;
+        let viewproj = proj_matrix * view_matrix;
 
         for indices in mesh.indices.chunks_exact(3) {
             let p1 = mesh.vertices[indices[0]];
             let p2 = mesh.vertices[indices[1]];
             let p3 = mesh.vertices[indices[2]];
 
-            let p1_ndc = p1;
-            let p2_ndc = p2;
-            let p3_ndc = p3;
+            let p1_ndc = viewproj * p1.extend(1.);
+            let p2_ndc = viewproj * p2.extend(1.);
+            let p3_ndc = viewproj * p3.extend(1.);
 
             // Convert NDC to screen-space coordinates
-            let p1_ss = (ndc_to_ss * p1_ndc.extend(1.)).xy();
-            let p2_ss = (ndc_to_ss * p2_ndc.extend(1.)).xy();
-            let p3_ss = (ndc_to_ss * p3_ndc.extend(1.)).xy();
+            let p1_ss = (ndc_to_ss * p1_ndc).xy();
+            let p2_ss = (ndc_to_ss * p2_ndc).xy();
+            let p3_ss = (ndc_to_ss * p3_ndc).xy();
 
             self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss));
         }

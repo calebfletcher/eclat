@@ -1,3 +1,4 @@
+use eclat::camera::Camera;
 use eclat::colour::Colour;
 use eclat::mesh::Mesh;
 use eclat::PixelBuffer;
@@ -39,14 +40,19 @@ fn main() {
                 pixel_buffer.clear(Colour::BLACK);
 
                 let vertices = vec![
-                    vec3(-0.9, -0.9, 0.),
-                    vec3(0.9, -0.9, 0.),
-                    vec3(0.9, 0.9, 0.),
-                    vec3(0.9, 0.9, 0.),
-                    vec3(-0.9, 0.9, 0.),
-                    vec3(-0.9, -0.9, 0.),
+                    vec3(-1., -1., -1.),
+                    vec3(-1., -1., 1.),
+                    vec3(-1., 1., -1.),
+                    vec3(-1., 1., 1.),
+                    vec3(1., -1., -1.),
+                    vec3(1., -1., 1.),
+                    vec3(1., 1., -1.),
+                    vec3(1., 1., 1.),
                 ];
-                let indices = vec![0, 1, 2, 3, 4, 5];
+                let indices = vec![0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7];
+                // let indices = vec![
+                //     0, 1, 2, 1, 2, 3, 0, 1, 4, 1, 4, 5, 2, 3, 6, 3, 6, 7, 4, 5, 6, 5, 6, 7,
+                // ];
                 let colours = [Colour::RED, Colour::GREEN, Colour::BLUE]
                     .into_iter()
                     .cycle()
@@ -54,7 +60,10 @@ fn main() {
                     .collect();
 
                 let mesh = Mesh::new(vertices, indices, colours);
-                pixel_buffer.mesh(mesh);
+
+                let cam = Camera::looking_at(vec3(10., 10., -5.), vec3(0., 0., 0.));
+
+                pixel_buffer.mesh(mesh, cam);
 
                 pixel_buffer.save_buffer("out.png");
 
