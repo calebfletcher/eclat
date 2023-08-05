@@ -157,7 +157,14 @@ impl<'a> PixelBuffer<'a> {
             let p2_ss = (ndc_to_ss * p2_ndc).xy();
             let p3_ss = (ndc_to_ss * p3_ndc).xy();
 
-            self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss), Some([c1, c2, c3]));
+            let is_front_face = (p2_ndc.truncate() - p1_ndc.truncate())
+                .cross(p3_ndc.truncate() - p1_ndc.truncate())
+                .z
+                < 0.;
+
+            if is_front_face {
+                self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss), Some([c1, c2, c3]));
+            }
         }
     }
 
