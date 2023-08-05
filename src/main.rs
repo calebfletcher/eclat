@@ -1,4 +1,6 @@
-use eclat::{Colour, PixelBuffer, Triangle};
+use eclat::colour::Colour;
+use eclat::triangle::Triangle;
+use eclat::PixelBuffer;
 use glam::vec2;
 use std::num::NonZeroU32;
 use winit::event::{Event, WindowEvent};
@@ -46,6 +48,8 @@ fn main() {
                     vec2(70., 130.),
                     vec2(140., 140.),
                 ));
+
+                pixel_buffer.save_buffer("out.png");
 
                 buffer.present().unwrap();
             }

@@ -2,9 +2,9 @@ use std::ops::Mul;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Colour {
-    r: u8,
-    g: u8,
-    b: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 impl Colour {
@@ -24,6 +24,17 @@ impl Colour {
 impl From<Colour> for u32 {
     fn from(value: Colour) -> Self {
         u32::from_be_bytes([0, value.r, value.g, value.b])
+    }
+}
+
+impl From<u32> for Colour {
+    fn from(value: u32) -> Self {
+        let bytes = value.to_be_bytes();
+        Self {
+            r: bytes[1],
+            g: bytes[2],
+            b: bytes[3],
+        }
     }
 }
 

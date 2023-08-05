@@ -1,11 +1,14 @@
-mod colour;
-mod line;
-mod pipeline;
-mod triangle;
+pub mod colour;
+pub mod line;
+pub mod pipeline;
+pub mod triangle;
 
-pub use colour::*;
+use std::path::Path;
+
+use colour::*;
 use glam::Vec3;
-pub use triangle::Triangle;
+use image::Rgb;
+use triangle::Triangle;
 
 pub struct PixelBuffer<'a> {
     buffer: &'a mut [u32],
@@ -35,6 +38,24 @@ impl<'a> PixelBuffer<'a> {
 
     fn index(&self, x: usize, y: usize) -> usize {
         y * self.width + x
+    }
+
+    pub fn save_buffer(&self, path: impl AsRef<Path>) {
+        let pixels = self
+            .buffer
+            .iter()
+            .flat_map(|&pixel| {
+                let pixel = Colour::from(pixel);
+                [pixel.r, pixel.g, pixel.b]
+            })
+            .collect::<Vec<_>>();
+        let img = image::ImageBuffer::<Rgb<u8>, _>::from_vec(
+            self.width as u32,
+            self.height as u32,
+            pixels,
+        )
+        .unwrap();
+        img.save(path).unwrap();
     }
 
     pub fn line(&mut self, x0: usize, y0: usize, x1: usize, y1: usize, colour: Colour) {
@@ -74,8 +95,6 @@ impl<'a> PixelBuffer<'a> {
         for x in aabb.top_left.x as usize..=aabb.bottom_right.x as usize {
             for y in aabb.top_left.y as usize..=aabb.bottom_right.y as usize {
                 let bary = triangle.barycentric(x as f32, y as f32);
-                const AA_DIST: f32 = 0.01;
-                let min = bary.min_element();
                 if bary.cmpge(Vec3::ZERO).all() && bary.cmple(Vec3::ONE).all() {
                     self.set_pixel(
                         x,
@@ -85,18 +104,6 @@ impl<'a> PixelBuffer<'a> {
                             (bary.y * 255.) as u8,
                             (bary.z * 255.) as u8,
                         ),
-                    );
-                } else if min < 0. && min > -AA_DIST {
-                    let alpha = 1. + min / AA_DIST;
-                    self.set_pixel(
-                        x,
-                        y,
-                        alpha
-                            * Colour::new(
-                                (bary.x * 255.) as u8,
-                                (bary.y * 255.) as u8,
-                                (bary.z * 255.) as u8,
-                            ),
                     );
                 }
             }
