@@ -1,6 +1,7 @@
 use eclat::camera::Camera;
 use eclat::colour::Colour;
 use eclat::mesh::Mesh;
+use eclat::perspective::Perspective;
 use eclat::PixelBuffer;
 use glam::vec3;
 use std::num::NonZeroU32;
@@ -49,11 +50,10 @@ fn main() {
                     vec3(1., 1., -1.),
                     vec3(1., 1., 1.),
                 ];
-                let indices = vec![0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7];
-                // let indices = vec![
-                //     0, 1, 2, 1, 2, 3, 0, 1, 4, 1, 4, 5, 2, 3, 6, 3, 6, 7, 4, 5, 6, 5, 6, 7,
-                // ];
-                let colours = [Colour::RED, Colour::GREEN, Colour::BLUE]
+                let indices = vec![
+                    0, 1, 2, 1, 2, 3, 0, 1, 4, 1, 4, 5, 2, 3, 6, 3, 6, 7, 4, 5, 6, 5, 6, 7,
+                ];
+                let colours = [Colour::RED, Colour::GREEN, Colour::BLUE, Colour::WHITE]
                     .into_iter()
                     .cycle()
                     .take(vertices.len())
@@ -61,9 +61,10 @@ fn main() {
 
                 let mesh = Mesh::new(vertices, indices, colours);
 
-                let cam = Camera::looking_at(vec3(10., 10., -5.), vec3(0., 0., 0.));
+                let cam = Camera::looking_at(vec3(3., 3., 5.), vec3(0., 0., 0.));
+                let proj = Perspective::new(0.01, 20., 0.01, 0.01);
 
-                pixel_buffer.mesh(mesh, cam);
+                pixel_buffer.mesh(mesh, cam, proj);
 
                 pixel_buffer.save_buffer("out.png");
 

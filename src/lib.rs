@@ -2,6 +2,7 @@ pub mod camera;
 pub mod colour;
 pub mod line;
 pub mod mesh;
+pub mod perspective;
 pub mod pipeline;
 pub mod triangle;
 
@@ -12,6 +13,7 @@ use colour::*;
 use glam::{Mat4, Vec3, Vec4Swizzles};
 use image::Rgb;
 use mesh::Mesh;
+use perspective::Perspective;
 use triangle::Triangle;
 
 pub struct PixelBuffer<'a> {
@@ -114,20 +116,27 @@ impl<'a> PixelBuffer<'a> {
         }
     }
 
-    pub fn mesh(&mut self, mesh: Mesh, camera: Camera) {
+    pub fn mesh(&mut self, mesh: Mesh, camera: Camera, proj: Perspective) {
         let ndc_to_ss = self.ndc_to_ss();
         let view_matrix = camera.as_matrix();
-        let proj_matrix = Mat4::IDENTITY;
+        let proj_matrix = proj.as_matrix();
         let viewproj = proj_matrix * view_matrix;
 
         for indices in mesh.indices.chunks_exact(3) {
             let p1 = mesh.vertices[indices[0]];
             let p2 = mesh.vertices[indices[1]];
             let p3 = mesh.vertices[indices[2]];
+            let c1 = mesh.colours[indices[0]];
+            let c2 = mesh.colours[indices[1]];
+            let c3 = mesh.colours[indices[2]];
 
-            let p1_ndc = viewproj * p1.extend(1.);
-            let p2_ndc = viewproj * p2.extend(1.);
-            let p3_ndc = viewproj * p3.extend(1.);
+            let p1_clip = viewproj * p1.extend(1.);
+            let p2_clip = viewproj * p2.extend(1.);
+            let p3_clip = viewproj * p3.extend(1.);
+
+            let p1_ndc = p1_clip / p1_clip.w;
+            let p2_ndc = p2_clip / p2_clip.w;
+            let p3_ndc = p3_clip / p3_clip.w;
 
             // Convert NDC to screen-space coordinates
             let p1_ss = (ndc_to_ss * p1_ndc).xy();
