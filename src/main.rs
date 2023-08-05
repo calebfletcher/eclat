@@ -7,7 +7,10 @@ use winit::window::WindowBuilder;
 
 fn main() {
     let event_loop = EventLoop::new();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
+    let window = WindowBuilder::new()
+        .with_title("eclat")
+        .build(&event_loop)
+        .unwrap();
     let context = unsafe { softbuffer::Context::new(&window) }.unwrap();
     let mut surface = unsafe { softbuffer::Surface::new(&context, &window) }.unwrap();
 
