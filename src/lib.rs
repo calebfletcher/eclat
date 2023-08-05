@@ -95,22 +95,36 @@ impl<'a> PixelBuffer<'a> {
         }
     }
 
-    pub fn triangle(&mut self, triangle: Triangle) {
+    pub fn triangle(&mut self, triangle: Triangle, colours: Option<[Colour; 3]>) {
         let aabb = triangle.aabb();
 
         for x in aabb.top_left.x as usize..=aabb.bottom_right.x as usize {
             for y in aabb.top_left.y as usize..=aabb.bottom_right.y as usize {
                 let bary = triangle.barycentric(x as f32, y as f32);
                 if bary.cmpge(Vec3::ZERO).all() && bary.cmple(Vec3::ONE).all() {
-                    self.set_pixel(
-                        x,
-                        y,
+                    let colour = if let Some(colours) = colours {
+                        Colour::new(
+                            (bary.x * colours[0].r as f32
+                                + bary.y * colours[1].r as f32
+                                + bary.z * colours[2].r as f32)
+                                .round() as u8,
+                            (bary.x * colours[0].g as f32
+                                + bary.y * colours[1].g as f32
+                                + bary.z * colours[2].g as f32)
+                                .round() as u8,
+                            (bary.x * colours[0].b as f32
+                                + bary.y * colours[1].b as f32
+                                + bary.z * colours[2].b as f32)
+                                .round() as u8,
+                        )
+                    } else {
                         Colour::new(
                             (bary.x * 255.) as u8,
                             (bary.y * 255.) as u8,
                             (bary.z * 255.) as u8,
-                        ),
-                    );
+                        )
+                    };
+                    self.set_pixel(x, y, colour);
                 }
             }
         }
@@ -143,7 +157,7 @@ impl<'a> PixelBuffer<'a> {
             let p2_ss = (ndc_to_ss * p2_ndc).xy();
             let p3_ss = (ndc_to_ss * p3_ndc).xy();
 
-            self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss));
+            self.triangle(Triangle::new(p1_ss, p2_ss, p3_ss), Some([c1, c2, c3]));
         }
     }
 
