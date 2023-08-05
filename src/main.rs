@@ -40,29 +40,12 @@ fn main() {
                     PixelBuffer::new(&mut buffer, width as usize, height as usize);
                 pixel_buffer.clear(Colour::BLACK);
 
-                let vertices = vec![
-                    vec3(-1., -1., -1.),
-                    vec3(-1., -1., 1.),
-                    vec3(-1., 1., -1.),
-                    vec3(-1., 1., 1.),
-                    vec3(1., -1., -1.),
-                    vec3(1., -1., 1.),
-                    vec3(1., 1., -1.),
-                    vec3(1., 1., 1.),
-                ];
-                let indices = vec![
-                    0, 1, 2, 1, 2, 3, 0, 1, 4, 1, 4, 5, 2, 3, 6, 3, 6, 7, 4, 5, 6, 5, 6, 7,
-                ];
-                let colours = [Colour::RED, Colour::GREEN, Colour::BLUE, Colour::WHITE]
-                    .into_iter()
-                    .cycle()
-                    .take(vertices.len())
-                    .collect();
+                let mesh = Mesh::cube();
 
-                let mesh = Mesh::new(vertices, indices, colours);
-
-                let cam = Camera::looking_at(vec3(3., 3., 5.), vec3(0., 0., 0.));
-                let proj = Perspective::new(0.01, 20., 0.01, 0.01);
+                let cam = Camera::looking_at(vec3(5., 3., 5.), vec3(0., 0., 0.));
+                let proj_height = 0.01;
+                let proj_width = proj_height * width as f32 / height as f32;
+                let proj = Perspective::new(0.01, 20., proj_width, proj_height);
 
                 pixel_buffer.mesh(mesh, cam, proj);
 
