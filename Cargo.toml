@@ -1,0 +1,9 @@
+[package]
+name = "eclat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+glam = "0.24.1"
+softbuffer = { version = "0.3.0", default-features = false }
+winit = { version = "0.28.6", default-features = false }
